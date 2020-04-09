@@ -6,6 +6,7 @@ import { isAuthorized } from '../middlewares/common/isAuthorized';
 
 const {
   validateTitle,
+  validateKeywords,
   validateBody: validatePostBody,
   validateAuthorExists,
   validateId,
@@ -18,6 +19,7 @@ const postRouter = express.Router();
 
 const createPostValidations = [
   validateTitle,
+  validateKeywords,
   validatePostBody,
   validateAuthorExists,
 ];

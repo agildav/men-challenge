@@ -3,7 +3,7 @@ import { filterParams } from '../../utils/paramsUtil';
 
 const findAllPosts = async (req, res, next) => {
   try {
-    const allowedQueryParams = ['author'];
+    const allowedQueryParams = ['author', 'keywords'];
 
     const posts = await postService.findAll(
       filterParams(req.query, allowedQueryParams),
