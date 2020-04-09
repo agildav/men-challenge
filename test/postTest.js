@@ -6,8 +6,10 @@ import faker from 'faker';
 import User, { MIN_PASSWORD_LENGTH } from '../src/models/user';
 import Post, {
   MAX_TITLE_LENGTH,
+  MIN_KEYWORDS_LENGTH,
   MAX_BODY_LENGTH,
   TITLE_FIELD_NAME,
+  KEYWORDS_FIELD_NAME,
   BODY_FIELD_NAME,
   AUTHOR_FIELD_NAME,
 } from '../src/models/post';
@@ -19,7 +21,11 @@ const { before, after } = mocha;
 const { describe, it } = mocha;
 const { assert } = chai;
 
-const { TITLE_INVALID_LENGTH, BODY_INVALID_LENGTH } = locales.post.validations;
+const {
+  TITLE_INVALID_LENGTH,
+  BODY_INVALID_LENGTH,
+  KEYWORDS_INVALID_LENGTH,
+} = locales.post.validations;
 const { USER_NOT_EXISTS } = locales.user.responses;
 const { POST_NOT_EXISTS } = locales.post.responses;
 
@@ -38,6 +44,7 @@ let existingUserToken2;
 const generatePost = () => ({
   title: faker.lorem.words(1),
   body: faker.lorem.words(5),
+  keywords: [faker.lorem.words(1), faker.lorem.words(1)],
 });
 let existingPost;
 
@@ -47,6 +54,7 @@ const instance = axios.create({
 });
 
 const FAKE_OBJECT_ID = '5e8b658cb5297dae7ae1fa8e';
+const FAKE_KEYWORD = 'fakeKeyword';
 
 describe('Post Controller', () => {
   before(async () => {
@@ -100,10 +108,29 @@ describe('Post Controller', () => {
         assertHasFieldErrors(err, TITLE_FIELD_NAME);
       }
     });
+    it('Should return bad request as keywords is empty', async () => {
+      try {
+        const post = {
+          body: faker.lorem.words(5),
+          author: existingUser._id,
+        };
+        await instance.post(
+          '/posts',
+          post,
+          buildAuthorizationHeader(existingUserToken),
+        );
+        assert.fail();
+      } catch (err) {
+        assert.equal(err.response.status, 422);
+        assert.isNotEmpty(err.response.data.errors);
+        assertHasFieldErrors(err, KEYWORDS_FIELD_NAME);
+      }
+    });
     it('Should return bad request as title length is greater than max chars allowed', async () => {
       try {
         const post = {
           title: faker.lorem.words(MAX_TITLE_LENGTH),
+          keywords: [faker.lorem.words(1)],
           body: faker.lorem.words(5),
           author: existingUser._id,
         };
@@ -124,10 +151,36 @@ describe('Post Controller', () => {
         );
       }
     });
+    it('Should return bad request as keywords length is lower than min chars allowed', async () => {
+      try {
+        const post = {
+          title: faker.lorem.words(MAX_TITLE_LENGTH),
+          keywords: [],
+          body: faker.lorem.words(5),
+          author: existingUser._id,
+        };
+        await instance.post(
+          '/posts',
+          post,
+          buildAuthorizationHeader(existingUserToken),
+        );
+        assert.fail();
+      } catch (err) {
+        assert.equal(err.response.status, 422);
+        assert.isNotEmpty(err.response.data.errors);
+        assertHasFieldErrors(err, KEYWORDS_FIELD_NAME);
+        const invalidKeywordsErr = err.response.data.errors.shift();
+        assert.equal(
+          invalidKeywordsErr.msg,
+          `${KEYWORDS_INVALID_LENGTH} ${MIN_KEYWORDS_LENGTH}`,
+        );
+      }
+    });
     it('Should return bad request as post body is empty', async () => {
       try {
         const post = {
           title: faker.lorem.words(1),
+          keywords: [faker.lorem.words(1)],
           author: existingUser._id,
         };
         await instance.post(
@@ -146,6 +199,7 @@ describe('Post Controller', () => {
       try {
         const post = {
           title: faker.lorem.words(1),
+          keywords: [faker.lorem.words(1)],
           body: faker.lorem.words(MAX_BODY_LENGTH),
           author: existingUser._id,
         };
@@ -170,6 +224,7 @@ describe('Post Controller', () => {
       try {
         const post = {
           title: faker.lorem.words(1),
+          keywords: [faker.lorem.words(1)],
           body: faker.lorem.words(5),
           author: faker.random.uuid(),
         };
@@ -189,6 +244,7 @@ describe('Post Controller', () => {
       try {
         const post = {
           title: faker.lorem.words(1),
+          keywords: [faker.lorem.words(1)],
           body: faker.lorem.words(5),
           author: FAKE_OBJECT_ID,
         };
@@ -210,6 +266,7 @@ describe('Post Controller', () => {
       try {
         const post = {
           title: faker.lorem.words(1),
+          keywords: [faker.lorem.words(1), faker.lorem.words(1)],
           body: faker.lorem.words(5),
           author: existingUser._id,
         };
@@ -221,6 +278,7 @@ describe('Post Controller', () => {
         assert.equal(createdPost.status, 200);
         assert.equal(existingUser._id, createdPost.data.author);
         assert.equal(post.title, createdPost.data.title);
+        assert.deepEqual(post.keywords, createdPost.data.keywords);
         assert.equal(post.body, createdPost.data.body);
         assert.isNotEmpty(createdPost.data.date);
       } catch (err) {
@@ -231,6 +289,7 @@ describe('Post Controller', () => {
       try {
         const post = {
           title: faker.lorem.words(1),
+          keywords: [faker.lorem.words(1), faker.lorem.words(1)],
           body: faker.lorem.words(5),
           author: existingUser._id,
         };
@@ -242,6 +301,7 @@ describe('Post Controller', () => {
         assert.equal(createdPost.status, 200);
         assert.equal(existingUser2._id, createdPost.data.author);
         assert.equal(post.title, createdPost.data.title);
+        assert.deepEqual(post.keywords, createdPost.data.keywords);
         assert.equal(post.body, createdPost.data.body);
         assert.isNotEmpty(createdPost.data.date);
       } catch (err) {
@@ -283,6 +343,7 @@ describe('Post Controller', () => {
         const foundPost = posts.data.shift();
         assert.equal(foundPost.author, existingPost.author);
         assert.equal(foundPost.title, existingPost.title);
+        assert.deepEqual(foundPost.keywords, existingPost.keywords);
         assert.equal(foundPost.body, existingPost.body);
         assert.equal(foundPost._id, existingPost._id);
       } catch (err) {
@@ -300,8 +361,39 @@ describe('Post Controller', () => {
         const foundPost = posts.data.shift();
         assert.equal(foundPost.author, existingPost.author);
         assert.equal(foundPost.title, existingPost.title);
+        assert.deepEqual(foundPost.keywords, existingPost.keywords);
         assert.equal(foundPost.body, existingPost.body);
         assert.equal(foundPost._id, existingPost._id);
+      } catch (err) {
+        assert.fail();
+      }
+    });
+    it('Should return existing posts by keywords', async () => {
+      try {
+        const posts = await instance.get(
+          `/posts?keywords=${existingPost.keywords[0]}`,
+          buildAuthorizationHeader(existingUserToken),
+        );
+        assert.equal(posts.status, 200);
+        assert.isNotEmpty(posts.data);
+        const foundPost = posts.data.shift();
+        assert.equal(foundPost.author, existingPost.author);
+        assert.equal(foundPost.title, existingPost.title);
+        assert.deepEqual(foundPost.keywords, existingPost.keywords);
+        assert.equal(foundPost.body, existingPost.body);
+        assert.equal(foundPost._id, existingPost._id);
+      } catch (err) {
+        assert.fail();
+      }
+    });
+    it('Should return empty array as keyword does not exist', async () => {
+      try {
+        const posts = await instance.get(
+          `/posts?keywords=${FAKE_KEYWORD}`,
+          buildAuthorizationHeader(existingUserToken),
+        );
+        assert.equal(posts.status, 200);
+        assert.isEmpty(posts.data);
       } catch (err) {
         assert.fail();
       }
@@ -351,6 +443,7 @@ describe('Post Controller', () => {
         assert.equal(post.status, 200);
         assert.equal(post.data._id, existingPost._id);
         assert.equal(post.data.title, existingPost.title);
+        assert.deepEqual(post.data.keywords, existingPost.keywords);
         assert.equal(post.data.body, existingPost.body);
         assert.equal(post.data.author, existingPost.author);
       } catch (err) {

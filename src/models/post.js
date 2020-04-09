@@ -2,9 +2,11 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 export const MAX_TITLE_LENGTH = 20;
+export const MIN_KEYWORDS_LENGTH = 1;
 export const MAX_BODY_LENGTH = 200;
 
 export const TITLE_FIELD_NAME = 'title';
+export const KEYWORDS_FIELD_NAME = 'keywords';
 export const AUTHOR_FIELD_NAME = 'author';
 export const BODY_FIELD_NAME = 'body';
 
@@ -13,6 +15,10 @@ const PostSchema = new Schema({
     type: String,
     required: true,
     maxlength: MAX_TITLE_LENGTH,
+  },
+  keywords: {
+    type: [String],
+    required: true,
   },
   author: {
     type: Schema.Types.ObjectId,

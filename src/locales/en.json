@@ -13,6 +13,7 @@
   "post": {
     "validations": {
       "TITLE_INVALID_LENGTH": "Title length must be greater than",
+      "KEYWORDS_INVALID_LENGTH": "Keywords length must be greater than",
       "BODY_INVALID_LENGTH": "Body length must be greater than"
     },
     "responses": {
