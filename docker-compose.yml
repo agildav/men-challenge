@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  db:
+    restart: always
+    container_name: men-db
+    image: men-db:1.0
+    build:
+      context: ./src/database/
+      dockerfile: Dockerfile
+    ports:
+      - 27017:27017
+
+  api:
+    restart: always
+    tty: true
+    stdin_open: true
+    container_name: men-api
+    command: ['npm', 'run', 'dev']
+    image: men-api:1.0
+    depends_on:
+      - db
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/home/node/men
+      - /home/node/men/node_modules/
+    ports:
+      - 3000:3000
+      - 9229:9229

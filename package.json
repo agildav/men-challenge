@@ -1,11 +1,15 @@
 {
+  "engines": {
+    "node": "12.16.1",
+    "npm": "6.13.4"
+  },
   "name": "men-challenge",
   "version": "0.0.1",
   "type": "module",
   "private": true,
   "scripts": {
     "start": "node --no-warnings --require dotenv/config --experimental-modules --es-module-specifier-resolution=node ./app.js",
-    "dev": "nodemon --no-warnings --require dotenv/config --experimental-modules --es-module-specifier-resolution=node ./app.js",
+    "dev": "nodemon --config nodemon.json",
     "test": "NODE_ENV=test mocha --no-warnings --require dotenv/config --experimental-modules --es-module-specifier-resolution=node --exit"
   },
   "dependencies": {

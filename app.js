@@ -7,7 +7,7 @@ const NODE_ENV_TEST = 'test';
 const { NODE_ENV, PORT } = process.env;
 
 app.listen(PORT || 3000, async () => {
-  logger.info(`App listening on port ${process.env.PORT}!`);
+  logger.info(`App listening in ${NODE_ENV} mode on port ${process.env.PORT}!`);
   await connectToDatabase();
   if (NODE_ENV !== NODE_ENV_TEST) seedDatabase();
 });
