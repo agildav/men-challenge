@@ -3,6 +3,7 @@ import validateKeywords from './validateKeywords';
 import validateBody from './validateBody';
 import validateAuthorExists from './validateAuthorExists';
 import validateId from './validateId';
+import validatePostExists from './validatePostExists';
 
 export default {
   validateTitle,
@@ -10,4 +11,5 @@ export default {
   validateBody,
   validateAuthorExists,
   validateId,
+  validatePostExists,
 };

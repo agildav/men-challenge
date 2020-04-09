@@ -282,7 +282,7 @@ describe('Post Controller', () => {
         assert.equal(post.body, createdPost.data.body);
         assert.isNotEmpty(createdPost.data.date);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
     it('Should create a new post successfully even with author mismatch', async () => {
@@ -305,7 +305,31 @@ describe('Post Controller', () => {
         assert.equal(post.body, createdPost.data.body);
         assert.isNotEmpty(createdPost.data.date);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
+      }
+    });
+    it('Should create a new comment on a post successfully', async () => {
+      try {
+        const postToCreate = {
+          ...generatePost(),
+          ...{ author: existingUser._id },
+        };
+        existingPost = await Post.create(postToCreate);
+        const comment = {
+          body: faker.lorem.words(5),
+        };
+        const createdComment = await instance.post(
+          `/posts/${existingPost._id}/comments`,
+          comment,
+          buildAuthorizationHeader(existingUserToken),
+        );
+
+        assert.equal(createdComment.status, 200);
+        assert.equal(existingUser._id, createdComment.data.author);
+        assert.equal(comment.body, createdComment.data.body);
+        assert.isNotEmpty(createdComment.data.date);
+      } catch (err) {
+        assert.fail(err);
       }
     });
 
@@ -347,7 +371,7 @@ describe('Post Controller', () => {
         assert.equal(foundPost.body, existingPost.body);
         assert.equal(foundPost._id, existingPost._id);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
     it('Should return existing posts by author', async () => {
@@ -365,7 +389,7 @@ describe('Post Controller', () => {
         assert.equal(foundPost.body, existingPost.body);
         assert.equal(foundPost._id, existingPost._id);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
     it('Should return empty array as author does not exist', async () => {
@@ -378,7 +402,7 @@ describe('Post Controller', () => {
         assert.equal(posts.status, 200);
         assert.isEmpty(posts.data);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
     it('Should return existing posts by keywords', async () => {
@@ -396,7 +420,7 @@ describe('Post Controller', () => {
         assert.equal(foundPost.body, existingPost.body);
         assert.equal(foundPost._id, existingPost._id);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
     it('Should return empty array as keyword does not exist', async () => {
@@ -408,7 +432,7 @@ describe('Post Controller', () => {
         assert.equal(posts.status, 200);
         assert.isEmpty(posts.data);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
     after(async () => {
@@ -460,7 +484,7 @@ describe('Post Controller', () => {
         assert.equal(post.data.body, existingPost.body);
         assert.equal(post.data.author, existingPost.author);
       } catch (err) {
-        assert.fail();
+        assert.fail(err);
       }
     });
 
