@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "./app.js"],
+  "ext": "js",
+  "ignore": [],
+  "exec": "node --inspect=0.0.0.0:9229 --no-warnings --require dotenv/config --experimental-modules --es-module-specifier-resolution=node ./app.js"
+}
