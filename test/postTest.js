@@ -368,6 +368,19 @@ describe('Post Controller', () => {
         assert.fail();
       }
     });
+    it('Should return empty array as author does not exist', async () => {
+      try {
+        const posts = await instance.get(
+          `/posts?author=${FAKE_OBJECT_ID}`,
+          buildAuthorizationHeader(existingUserToken),
+        );
+
+        assert.equal(posts.status, 200);
+        assert.isEmpty(posts.data);
+      } catch (err) {
+        assert.fail();
+      }
+    });
     it('Should return existing posts by keywords', async () => {
       try {
         const posts = await instance.get(
