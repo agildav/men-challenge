@@ -29,6 +29,12 @@ let existingUser = {
 };
 let existingUserToken;
 
+let existingUser2 = {
+  email: faker.internet.email(),
+  password: faker.internet.password(MIN_PASSWORD_LENGTH),
+};
+let existingUserToken2;
+
 const generatePost = () => ({
   title: faker.lorem.words(1),
   body: faker.lorem.words(5),
@@ -47,6 +53,8 @@ describe('Post Controller', () => {
     await User.remove({});
     existingUser = await User.create(existingUser);
     existingUserToken = signJwt(existingUser);
+    existingUser2 = await User.create(existingUser2);
+    existingUserToken2 = signJwt(existingUser2);
   });
 
   describe('POST /posts', () => {
@@ -204,6 +212,27 @@ describe('Post Controller', () => {
           title: faker.lorem.words(1),
           body: faker.lorem.words(5),
           author: existingUser._id,
+        };
+        const createdPost = await instance.post(
+          '/posts',
+          post,
+          buildAuthorizationHeader(existingUserToken),
+        );
+        assert.equal(createdPost.status, 200);
+        assert.equal(existingUser._id, createdPost.data.author);
+        assert.equal(post.title, createdPost.data.title);
+        assert.equal(post.body, createdPost.data.body);
+        assert.isNotEmpty(createdPost.data.date);
+      } catch (err) {
+        assert.fail();
+      }
+    });
+    it('Should create a new post successfully even with author mismatch', async () => {
+      try {
+        const post = {
+          title: faker.lorem.words(1),
+          body: faker.lorem.words(5),
+          author: existingUser2._id,
         };
         const createdPost = await instance.post(
           '/posts',
