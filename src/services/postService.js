@@ -4,7 +4,7 @@ const { Post } = models;
 
 const create = (post) => Post.create(post);
 
-const findAll = () => Post.find({});
+const findAll = (parameters) => Post.find({ ...parameters });
 
 const findById = (id) => Post.findById(id);
 
